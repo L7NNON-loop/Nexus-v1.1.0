@@ -1,49 +1,12 @@
 # Nexus WhatsApp Bot (Baileys) — v1.1.360.187.12
 
-Servidor avançado multi-sessão para WhatsApp com **Baileys**, foco em:
-- Comandos organizados (PT por padrão)
-- Menu bonito com imagem (Madara Uchiha)
-- Multi-conexão (`/conectar`)
-- Sessões persistentes
-- API HTTP para Render: `/connect`, `/qr/:session`, `/code/:session`
-- Compatível com Termux
+Servidor avançado multi-sessão para WhatsApp com **Baileys**.
 
 ## Recursos incluídos
-
-- **Base completa de bot** estilo MD com categorias utilitárias, grupo, admin, idiomas e status.
-- **Comandos-chave**:
-  - `/menu`
-  - `/ping`
-  - `/relogio`
-  - `/idioma pt|en|es`
-  - `/conectar <nome>`
-  - `/qr [sessao]`
-  - `/code [sessao] <telefone>`
-  - `/grupo abrir|fechar`
-  - `/antilink on|off`
-  - `/boasvindas on|off`
-  - `/owner`
-  - `/stats`
-- **Resposta com efeito de progresso** no WhatsApp para tarefas longas.
-- **Persistência de dados/sessões** em `sessions/` e `data/state.json`.
-
-## Estrutura
-
-```bash
-src/
-  bot/
-    commands.js
-    menu.js
-    sessionManager.js
-  store/
-    dataStore.js
-  web/
-    server.js
-  config.js
-  index.js
-render.yaml
-.env.example
-```
+- Comandos organizados e menu com imagem.
+- Multi-conexão com sessões persistidas em `sessions/<sessao>`.
+- API HTTP para Render: `/`, `/connect`, `/connect/code`, `/qr/:session`, `/code/:session`.
+- Compatível com Termux.
 
 ## Instalação local (Linux/Termux)
 
@@ -57,7 +20,15 @@ npm install
 npm start
 ```
 
-> No primeiro start, escaneie o QR no terminal ou gere código de pareamento via rota `/code`.
+## Fluxo recomendado de conexão
+
+1. Abra no navegador: `https://SEU-APP.onrender.com/connect`
+2. Preencha:
+   - nome da sessão
+   - número WhatsApp
+3. Clique em **Gerar código de conexão**.
+4. Digite o código no WhatsApp.
+5. Ao conectar, a sessão fica salva em `sessions/<sessao>`.
 
 ## Uso da API
 
@@ -65,11 +36,17 @@ npm start
 ```http
 GET /
 ```
-Retorna status, sessões, `waNumber` oficial e `codeConnect` com validade (`expiresAt`).
+Retorna `waNumber`, `codeConnect` com `expiresAt` e sessões.
 
-### Inicializar sessão
+### Tela de conexão
 ```http
-GET /connect?session=cliente123
+GET /connect
+```
+Abre interface HTML para gerar código.
+
+### Iniciar sessão via JSON
+```http
+GET /connect?json=1&session=cliente123
 ```
 ou
 ```http
@@ -79,13 +56,21 @@ POST /connect
 }
 ```
 
+### Gerar código via endpoint dedicado
+```http
+POST /connect/code
+{
+  "session": "cliente123",
+  "phone": "2588XXXXXXXX"
+}
+```
+
 ### Buscar QR da sessão
 ```http
 GET /qr/cliente123
 ```
-Retorna `qrRaw` e `qrImage` (base64).
 
-### Gerar código de pareamento
+### Gerar código por sessão
 ```http
 POST /code/cliente123
 {
@@ -94,37 +79,27 @@ POST /code/cliente123
 ```
 
 ## Deploy no Render
-
-1. Suba este projeto no GitHub.
-2. No Render, use **Blueprint** apontando para `render.yaml`.
-3. Defina variáveis sensíveis (se desejar) em *Environment*.
+1. Suba projeto no GitHub.
+2. No Render use **Blueprint** com `render.yaml`.
+3. Configure variáveis de ambiente.
 4. Deploy.
 
-### Comandos do Render
-- **Build Command:** `npm install`
-- **Start Command:** `npm start`
+### Comandos Render
+- Build: `npm install`
+- Start: `npm start`
 
-### Comandos para atualizar no Render
-Quando atualizar código no GitHub, o Render faz auto-deploy (se `autoDeploy=true`).
-Se quiser forçar localmente antes do push:
-
+### Atualizar Render
 ```bash
 git add .
 git commit -m "update: melhorias Nexus"
 git push origin <sua-branch>
 ```
-
-No painel do Render:
-- `Manual Deploy` → `Deploy latest commit`.
+No Render: `Manual Deploy` → `Deploy latest commit`.
 
 ## Variáveis importantes
-- `BOT_OWNER`: dono/admin do bot.
-- `OFFICIAL_WA_NUMBER`: número oficial usado para gerar `codeConnect` no `/`.
-- `CODE_TTL_SEC`: segundos de validade lógica do `codeConnect` exibido.
+- `BOT_OWNER`: dono/admin.
+- `OFFICIAL_WA_NUMBER`: número oficial para `codeConnect`.
+- `CODE_TTL_SEC`: validade lógica (segundos) do code.
 
 ## Admin configurado
-- WhatsApp ADM: `+258867983175`
-
-## Observações
-- O Baileys depende de mudanças da plataforma WhatsApp; mantenha dependências atualizadas.
-- Para produção séria multi-tenant, recomenda-se banco (Postgres/Redis) + fila + criptografia de sessão.
+- `+258867983175`
