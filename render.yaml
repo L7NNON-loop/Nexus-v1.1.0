@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: nexus-whatsapp-bot
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: BOT_NAME
+        value: Nexus
+      - key: BOT_VERSION
+        value: 1.1.360.187.12
+      - key: DEFAULT_LANG
+        value: pt
+      - key: TIMEZONE
+        value: Africa/Maputo
