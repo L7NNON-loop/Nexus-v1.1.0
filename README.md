@@ -61,7 +61,17 @@ npm start
 
 ## Uso da API
 
+### Status e código oficial
+```http
+GET /
+```
+Retorna status, sessões, `waNumber` oficial e `codeConnect` com validade (`expiresAt`).
+
 ### Inicializar sessão
+```http
+GET /connect?session=cliente123
+```
+ou
 ```http
 POST /connect
 {
@@ -93,6 +103,24 @@ POST /code/cliente123
 ### Comandos do Render
 - **Build Command:** `npm install`
 - **Start Command:** `npm start`
+
+### Comandos para atualizar no Render
+Quando atualizar código no GitHub, o Render faz auto-deploy (se `autoDeploy=true`).
+Se quiser forçar localmente antes do push:
+
+```bash
+git add .
+git commit -m "update: melhorias Nexus"
+git push origin <sua-branch>
+```
+
+No painel do Render:
+- `Manual Deploy` → `Deploy latest commit`.
+
+## Variáveis importantes
+- `BOT_OWNER`: dono/admin do bot.
+- `OFFICIAL_WA_NUMBER`: número oficial usado para gerar `codeConnect` no `/`.
+- `CODE_TTL_SEC`: segundos de validade lógica do `codeConnect` exibido.
 
 ## Admin configurado
 - WhatsApp ADM: `+258867983175`

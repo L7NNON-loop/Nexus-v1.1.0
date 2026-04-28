@@ -12,6 +12,7 @@ import { runCommand } from './commands.js';
 export function createSessionManager({ config, dataStore }) {
   const sessions = new Map();
   const lastQrMap = new Map();
+  const pairingCache = new Map();
 
   async function startSession(sessionName = 'principal') {
     if (sessions.has(sessionName)) {
@@ -84,6 +85,28 @@ export function createSessionManager({ config, dataStore }) {
     return code;
   }
 
+  async function getOfficialConnectCode(sessionName = 'principal', phoneNumber = config.officialWaNumber) {
+    const cacheKey = `${sessionName}:${phoneNumber}`;
+    const cached = pairingCache.get(cacheKey);
+    const now = Date.now();
+
+    if (cached && cached.expiresAtMs > now) {
+      return {
+        code: cached.code,
+        expiresAt: new Date(cached.expiresAtMs).toISOString(),
+      };
+    }
+
+    const code = await requestPairingCode(sessionName, phoneNumber);
+    const expiresAtMs = now + (config.codeTtlSec * 1000);
+    pairingCache.set(cacheKey, { code, expiresAtMs });
+
+    return {
+      code,
+      expiresAt: new Date(expiresAtMs).toISOString(),
+    };
+  }
+
   function listSessions() {
     return [...sessions.keys()];
   }
@@ -91,6 +114,7 @@ export function createSessionManager({ config, dataStore }) {
   const api = {
     startSession,
     requestPairingCode,
+    getOfficialConnectCode,
     listSessions,
     lastQrMap,
   };

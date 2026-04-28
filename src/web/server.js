@@ -5,19 +5,44 @@ export function createHttpServer({ config, sessionManager }) {
   const app = express();
   app.use(express.json());
 
-  app.get('/', (_, res) => {
+  app.get('/', async (_, res) => {
+    let codeConnect = null;
+
+    try {
+      codeConnect = await sessionManager.getOfficialConnectCode('principal', config.officialWaNumber);
+    } catch {
+      codeConnect = {
+        code: null,
+        expiresAt: null,
+        warning: 'Não foi possível gerar o code agora. Tente novamente em instantes.',
+      };
+    }
+
     res.json({
       ok: true,
       bot: config.botName,
       version: config.version,
+      waNumber: config.officialWaNumber,
+      codeConnect,
       sessions: sessionManager.listSessions(),
+    });
+  });
+
+  app.get('/connect', async (req, res) => {
+    const session = String(req.query?.session || 'principal').toLowerCase();
+    await sessionManager.startSession(session);
+    res.json({
+      ok: true,
+      method: 'GET',
+      session,
+      message: 'Sessão iniciada via GET. Para integração, prefira POST /connect.',
     });
   });
 
   app.post('/connect', async (req, res) => {
     const session = String(req.body?.session || 'principal').toLowerCase();
     await sessionManager.startSession(session);
-    res.json({ ok: true, session, message: 'Sessão inicializada.' });
+    res.json({ ok: true, method: 'POST', session, message: 'Sessão inicializada.' });
   });
 
   app.get('/qr/:session', async (req, res) => {
