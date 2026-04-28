@@ -1,0 +1,25 @@
+{
+  "name": "nexus-whatsapp-bot",
+  "version": "1.1.360.187.12",
+  "description": "Servidor avançado multi-sessão de bot WhatsApp com Baileys",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "lint": "echo 'No lint configured'"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.12",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "moment-timezone": "^0.5.47",
+    "pino": "^9.11.0",
+    "qrcode": "^1.5.4",
+    "uuid": "^11.1.0"
+  }
+}
